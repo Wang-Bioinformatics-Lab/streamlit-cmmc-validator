@@ -61,7 +61,7 @@ def usi_request(usi: str, max_attempts=3):
 
 # Streamlit UI
 st.title("CMMC USI and SMILES validator")
-st.write("Upload a TSV file to validate the USI and SMILES columns")
+st.write("Upload a TSV file to validate the entries from USI and SMILES columns")
 st.write("Template:  https://tinyurl.com/frku9zys")
 
 # File upload
