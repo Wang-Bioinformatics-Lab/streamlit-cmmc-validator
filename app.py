@@ -58,10 +58,42 @@ def usi_request(usi: str, max_attempts=3):
     # Return the result dictionary with status for each USI
     return results
 
+# Validation for input_molecule_origin, input_confirmation, and input_source
+valid_molecule_origin = [
+    "Microbial metabolism of drugs",
+    "Microbial metabolism of food molecules",
+    "Microbial metabolism of other human-made molecules",
+    "Microbial metabolism of host-derived molecules",
+    "Microbial metabolism of microbial-derived molecules",
+    "Host metabolism of microbial metabolites",
+    "De novo biosynthesis by microbes (e.g., natural products and other specialized metabolites)",
+    "Diet",
+    "Unknown/Undefined"
+]
+
+valid_confirmation = ["confirmed", "predicted"]
+
+valid_source = [
+    "Microbial",
+    "Microbial and Host",
+    "Microbial and Diet",
+    "Microbial, Host, and Diet",
+    "Diet",
+    "Unknown"
+]
+
+# Function to validate entries based on valid lists
+def validate_entry(entry, valid_list):
+    if pd.isnull(entry):
+        return "No Data"
+    elif entry.strip() in valid_list:
+        return "Ok"
+    else:
+        return "FAILED"
 
 # Streamlit UI
-st.title("CMMC USI and SMILES validator")
-st.write("Upload a TSV file to validate the entries from USI and SMILES columns")
+st.title("USI, SMILES, and Metadata Validator")
+st.write("Upload a TSV file to validate the USI, SMILES, and metadata columns.")
 st.write("Template:  https://tinyurl.com/frku9zys")
 
 # File upload
@@ -75,24 +107,37 @@ if uploaded_file is not None:
     st.dataframe(df.head())
 
     # Check if required columns are present
-    if 'input_usi' in df.columns and 'input_structure' in df.columns:
+    if all(col in df.columns for col in ['input_usi', 'input_structure', 'input_molecule_origin', 'input_confirmation', 'input_source']):
         # Validate USI
         st.write("Validating USIs...")
         df['usi_validation_details'] = df['input_usi'].apply(lambda x: usi_request(x) if pd.notnull(x) else "No USI")
 
         # Validate SMILES
         st.write("Validating SMILES...")
-        df['smiles_validation'] = df['input_structure'].apply(
-            lambda x: check_smiles(x) if pd.notnull(x) else "No SMILES")
+        df['smiles_validation'] = df['input_structure'].apply(lambda x: check_smiles(x) if pd.notnull(x) else "No SMILES")
 
-        # Display the DataFrame with detailed USI validation results
+        # Validate input_molecule_origin
+        st.write("Validating input_molecule_origin...")
+        df['molecule_origin_validation'] = df['input_molecule_origin'].apply(lambda x: validate_entry(x, valid_molecule_origin))
+
+        # Validate input_confirmation
+        st.write("Validating input_confirmation...")
+        df['confirmation_validation'] = df['input_confirmation'].apply(lambda x: validate_entry(x, valid_confirmation))
+
+        # Validate input_source
+        st.write("Validating input_source...")
+        df['source_validation'] = df['input_source'].apply(lambda x: validate_entry(x, valid_source))
+
+        # Show updated DataFrame
         st.write("Validated Data:")
         st.dataframe(df.head())
 
-        # Show rows where any USI failed
-        failed_usi = df[df['usi_validation_details'].apply(
-            lambda x: any("FAILED" in v or v.startswith("Error") for v in x.values()))]
+        # Show rows with failed validations
+        failed_usi = df[df['usi_validation_details'].apply(lambda x: any(v == "FAILED" or v.startswith("Error") for v in x.values()))]
         failed_smiles = df[df['smiles_validation'] == 'FAILED']
+        failed_molecule_origin = df[df['molecule_origin_validation'] == 'FAILED']
+        failed_confirmation = df[df['confirmation_validation'] == 'FAILED']
+        failed_source = df[df['source_validation'] == 'FAILED']
 
         st.write(f"Failed USIs: {len(failed_usi)}")
         st.dataframe(failed_usi[['input_usi', 'usi_validation_details']])
@@ -100,8 +145,17 @@ if uploaded_file is not None:
         st.write(f"Failed SMILES: {len(failed_smiles)}")
         st.dataframe(failed_smiles[['input_structure', 'smiles_validation']])
 
+        st.write(f"Failed input_molecule_origin: {len(failed_molecule_origin)}")
+        st.dataframe(failed_molecule_origin[['input_molecule_origin', 'molecule_origin_validation']])
+
+        st.write(f"Failed input_confirmation: {len(failed_confirmation)}")
+        st.dataframe(failed_confirmation[['input_confirmation', 'confirmation_validation']])
+
+        st.write(f"Failed input_source: {len(failed_source)}")
+        st.dataframe(failed_source[['input_source', 'source_validation']])
+
         # Allow downloading the updated file with validation status
-        output_filename = "validated_usis_smiles.tsv"
+        output_filename = "validated_usis_smiles_metadata.tsv"
         df.to_csv(output_filename, sep='\t', index=False)
 
         with open(output_filename, "rb") as file:
@@ -112,4 +166,4 @@ if uploaded_file is not None:
                 mime="text/tab-separated-values"
             )
     else:
-        st.markdown("<p style='color:red;'>Error: The uploaded file must contain 'input_usi' and 'input_structure' columns.</p>", unsafe_allow_html=True)
+        st.markdown("<p style='color:red;'>Error: The uploaded file must contain 'input_usi', 'input_structure', 'input_molecule_origin', 'input_confirmation', and 'input_source' columns.</p>", unsafe_allow_html=True)
