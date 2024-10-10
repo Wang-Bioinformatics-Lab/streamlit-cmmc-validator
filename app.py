@@ -60,26 +60,26 @@ def usi_request(usi: str, max_attempts=3):
 
 # Validation for input_molecule_origin, input_confirmation, and input_source
 valid_molecule_origin = [
-    "Microbial metabolism of drugs",
-    "Microbial metabolism of food molecules",
-    "Microbial metabolism of other human-made molecules",
-    "Microbial metabolism of host-derived molecules",
-    "Microbial metabolism of microbial-derived molecules",
-    "Host metabolism of microbial metabolites",
-    "De novo biosynthesis by microbes (e.g., natural products and other specialized metabolites)",
-    "Diet",
-    "Unknown/Undefined"
+    'MICROBIAL METABOLISM OF DRUGS',
+    'MICROBIAL METABOLISM OF FOOD MOLECULES',
+    'MICROBIAL METABOLISM OF OTHER HUMAN-MADE MOLECULES',
+    'MICROBIAL METABOLISM OF HOST-DERIVED MOLECULES',
+    'MICROBIAL METABOLISM OF MICROBIAL-DERIVED MOLECULES',
+    'HOST METABOLISM OF MICROBIAL METABOLITES',
+    'DE NOVO BIOSYNTHESIS BY MICROBES (E.G., NATURAL PRODUCTS AND OTHER SPECIALIZED METABOLITES)',
+    'DIET',
+    'UNKNOWN/UNDEFINED'
 ]
 
-valid_confirmation = ["confirmed", "predicted"]
+valid_confirmation = ["CONFIRMED", "PREDICTED"]
 
 valid_source = [
-    "Microbial",
-    "Microbial and Host",
-    "Microbial and Diet",
-    "Microbial, Host, and Diet",
-    "Diet",
-    "Unknown"
+    'MICROBIAL',
+    'MICROBIAL AND HOST',
+    'MICROBIAL AND DIET',
+    'MICROBIAL, HOST, AND DIET',
+    'DIET',
+    'UNKNOWN'
 ]
 
 # Function to validate entries based on valid lists
@@ -107,18 +107,21 @@ if uploaded_file is not None:
     st.dataframe(df.head())
 
     # Check if required columns are present
-    if all(col in df.columns for col in ['input_usi', 'input_structure', 'input_molecule_origin', 'input_confirmation', 'input_source']):
+    if all(col in df.columns for col in
+           ['input_usi', 'input_structure', 'input_molecule_origin', 'input_confirmation', 'input_source']):
         # Validate USI
         st.write("Validating USIs...")
         df['usi_validation_details'] = df['input_usi'].apply(lambda x: usi_request(x) if pd.notnull(x) else "No USI")
 
         # Validate SMILES
         st.write("Validating SMILES...")
-        df['smiles_validation'] = df['input_structure'].apply(lambda x: check_smiles(x) if pd.notnull(x) else "No SMILES")
+        df['smiles_validation'] = df['input_structure'].apply(
+            lambda x: check_smiles(x) if pd.notnull(x) else "No SMILES")
 
         # Validate input_molecule_origin
         st.write("Validating input_molecule_origin...")
-        df['molecule_origin_validation'] = df['input_molecule_origin'].apply(lambda x: validate_entry(x, valid_molecule_origin))
+        df['molecule_origin_validation'] = df['input_molecule_origin'].apply(
+            lambda x: validate_entry(x, valid_molecule_origin))
 
         # Validate input_confirmation
         st.write("Validating input_confirmation...")
@@ -133,7 +136,8 @@ if uploaded_file is not None:
         st.dataframe(df.head())
 
         # Show rows with failed validations
-        failed_usi = df[df['usi_validation_details'].apply(lambda x: any(v == "FAILED" or v.startswith("Error") for v in x.values()))]
+        failed_usi = df[df['usi_validation_details'].apply(
+            lambda x: any(v == "FAILED" or v.startswith("Error") for v in x.values()))]
         failed_smiles = df[df['smiles_validation'] == 'FAILED']
         failed_molecule_origin = df[df['molecule_origin_validation'] == 'FAILED']
         failed_confirmation = df[df['confirmation_validation'] == 'FAILED']
