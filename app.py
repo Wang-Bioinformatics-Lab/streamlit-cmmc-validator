@@ -85,8 +85,8 @@ valid_source = [
 # Function to validate entries based on valid lists
 def validate_entry(entry, valid_list):
     if pd.isnull(entry):
-        return "No Data"
-    elif entry.strip() in valid_list:
+        return "No Data. Mandatory field."
+    elif entry.strip().upper() in valid_list:
         return "Ok"
     else:
         return "FAILED"
