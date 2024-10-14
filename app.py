@@ -58,29 +58,28 @@ def usi_request(usi: str, max_attempts=3):
     # Return the result dictionary with status for each USI
     return results
 
-# Validation for input_molecule_origin, input_confirmation, and input_source
-valid_molecule_origin = [
-    'MICROBIAL METABOLISM OF DRUGS',
-    'MICROBIAL METABOLISM OF FOOD MOLECULES',
-    'MICROBIAL METABOLISM OF OTHER HUMAN-MADE MOLECULES',
-    'MICROBIAL METABOLISM OF HOST-DERIVED MOLECULES',
-    'MICROBIAL METABOLISM OF MICROBIAL-DERIVED MOLECULES',
-    'HOST METABOLISM OF MICROBIAL METABOLITES',
-    'DE NOVO BIOSYNTHESIS BY MICROBES (E.G., NATURAL PRODUCTS AND OTHER SPECIALIZED METABOLITES)',
-    'DIET',
-    'UNKNOWN/UNDEFINED'
-]
+def retrieve_validation_lists(url, file_path='validation_tsv.tsv'):
+    response = requests.get(url)
+    response.raise_for_status()
 
-valid_confirmation = ["CONFIRMED", "PREDICTED"]
+    with open(file_path, 'w', encoding='utf-8') as file:
+        file.write(response.text)
 
-valid_source = [
-    'MICROBIAL',
-    'MICROBIAL AND HOST',
-    'MICROBIAL AND DIET',
-    'MICROBIAL, HOST, AND DIET',
-    'DIET',
-    'UNKNOWN'
-]
+    df = pd.read_csv(file_path, sep='\t')
+
+    valid_headers = list(df.columns)
+    valid_confirmation = df[
+        'input_confirmation'].dropna().str.upper().tolist() if 'input_confirmation' in df.columns else []
+    valid_molecule_origin = df[
+        'input_molecule_origin'].dropna().str.upper().tolist() if 'input_molecule_origin' in df.columns else []
+    valid_source = df['input_source'].dropna().str.upper().tolist() if 'input_source' in df.columns else []
+
+    return {
+        'valid_headers': valid_headers,
+        'valid_confirmation': valid_confirmation,
+        'valid_molecule_origin': valid_molecule_origin,
+        'valid_source': valid_source
+    }
 
 # Function to validate entries based on valid lists
 def validate_entry(entry, valid_list):
@@ -91,24 +90,49 @@ def validate_entry(entry, valid_list):
     else:
         return "FAILED"
 
+# Download and load validation data from google sheet reference file
+url = 'https://docs.google.com/spreadsheets/d/1ZF7uW3PxmOMMEJkiwDkHceI-W5aw2NE4aDc37kYDhNw/export?format=tsv&gid=724969182'
+validation_data = retrieve_validation_lists(url)
+
+# Function to validate headers
+def validate_headers(uploaded_headers, expected_headers):
+    missing_headers = [header for header in expected_headers if header not in uploaded_headers]
+    if missing_headers:
+        return False, missing_headers
+    return True, None
+
 # Streamlit UI
-st.title("USI, SMILES, and Metadata Validator")
-st.write("Upload a TSV file to validate the USI, SMILES, and metadata columns.")
+st.title("USI, SMILES, and Metadata Validator for CMMC batch deposition")
+# st.write("Upload a TSV file to validate the USI, SMILES, and metadata columns. It will check if: 1. All the headers are there and are valid; 2. Validate USI's; 3. Validate Smiles; 4. Validate fileds with controlled vocabulary.")
+st.markdown("""
+### Upload a TSV file to validate the USI, SMILES, and metadata columns.
+
+The validation process will check if:
+
+1. **All the headers** are present and valid.
+2. **USI's** are correctly formatted and validated.
+3. **SMILES strings** are properly formatted and validated.
+4. Fields with **controlled vocabulary** are checked for validity.
+""")
+
 st.write("Template:  https://tinyurl.com/frku9zys")
 
 # File upload
 uploaded_file = st.file_uploader("Choose a TSV file", type="tsv")
 
 if uploaded_file is not None:
-    # Load the file into a DataFrame
     df = pd.read_csv(uploaded_file, sep='\t')
 
-    st.write("Original Data:")
-    st.dataframe(df.head())
+    # Validate headers
+    st.write("Validating file headers...")
+    uploaded_headers = list(df.columns)
+    expected_headers = validation_data['valid_headers']
 
-    # Check if required columns are present
-    if all(col in df.columns for col in
-           ['input_usi', 'input_structure', 'input_molecule_origin', 'input_confirmation', 'input_source']):
+    headers_valid, missing_headers = validate_headers(uploaded_headers, expected_headers)
+
+    if headers_valid:
+        st.success("Headers are valid.", icon='✅')
+
         # Validate USI
         st.write("Validating USIs...")
         df['usi_validation_details'] = df['input_usi'].apply(lambda x: usi_request(x) if pd.notnull(x) else "No USI")
@@ -121,15 +145,15 @@ if uploaded_file is not None:
         # Validate input_molecule_origin
         st.write("Validating input_molecule_origin...")
         df['molecule_origin_validation'] = df['input_molecule_origin'].apply(
-            lambda x: validate_entry(x, valid_molecule_origin))
+            lambda x: validate_entry(x, validation_data['valid_molecule_origin']))
 
         # Validate input_confirmation
         st.write("Validating input_confirmation...")
-        df['confirmation_validation'] = df['input_confirmation'].apply(lambda x: validate_entry(x, valid_confirmation))
+        df['confirmation_validation'] = df['input_confirmation'].apply(lambda x: validate_entry(x, validation_data['valid_confirmation']))
 
         # Validate input_source
         st.write("Validating input_source...")
-        df['source_validation'] = df['input_source'].apply(lambda x: validate_entry(x, valid_source))
+        df['source_validation'] = df['input_source'].apply(lambda x: validate_entry(x, validation_data['valid_source']))
 
         # Show updated DataFrame
         st.write("Validated Data:")
@@ -170,4 +194,9 @@ if uploaded_file is not None:
                 mime="text/tab-separated-values"
             )
     else:
-        st.markdown("<p style='color:red;'>Error: The uploaded file must contain 'input_usi', 'input_structure', 'input_molecule_origin', 'input_confirmation', and 'input_source' columns.</p>", unsafe_allow_html=True)
+        # st.markdown(
+        #     f"<p style='color:red;'>Missing headers: <b>{', '.join(missing_headers)}</b>.</p> Please upload a file with all required headers. <br> <b>Tip:</b> if you think all headers are present, check for spelling errors. See the template link on the top of the page.</p>",
+        #     unsafe_allow_html=True)
+        st.error(
+            f"Missing headers: {', '.join(missing_headers)}. Please upload a file with all required headers.", icon='🚨')
+        st.warning('Tip: if you think all headers are present, check for spelling errors. See the template link on the top of the page.', icon='💡')
