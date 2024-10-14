@@ -194,9 +194,6 @@ if uploaded_file is not None:
                 mime="text/tab-separated-values"
             )
     else:
-        # st.markdown(
-        #     f"<p style='color:red;'>Missing headers: <b>{', '.join(missing_headers)}</b>.</p> Please upload a file with all required headers. <br> <b>Tip:</b> if you think all headers are present, check for spelling errors. See the template link on the top of the page.</p>",
-        #     unsafe_allow_html=True)
         st.error(
             f"Missing headers: {', '.join(missing_headers)}. Please upload a file with all required headers.", icon='🚨')
         st.warning('Tip: if you think all headers are present, check for spelling errors. See the template link on the top of the page.', icon='💡')

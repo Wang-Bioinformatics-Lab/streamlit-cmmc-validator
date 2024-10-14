@@ -16,9 +16,7 @@ def about_page():
 
     ### Who is this for?
     This tool is intended for:
-    - Researchers working with metabolomics and mass spectrometry data.
-    - Data curators needing to ensure proper data formatting and validation for datasets.
-    - Anyone who needs to validate USIs, SMILES strings, or metadata fields for scientific datasets.
+    - Anyone who needs to validate USIs, SMILES strings, or metadata CMMC batch deposition.
 
     ### How to Use the Tool
     1. **Upload** a TSV file containing the data you want to validate.
