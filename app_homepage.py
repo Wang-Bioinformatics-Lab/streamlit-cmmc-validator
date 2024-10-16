@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import requests
 import time
+import io
 
 
 # Function to check SMILES using the API
@@ -61,11 +62,8 @@ def usi_request(usi: str, max_attempts=3):
 def retrieve_validation_lists(url, file_path='validation_tsv.tsv'):
     response = requests.get(url)
     response.raise_for_status()
-
-    with open(file_path, 'w', encoding='utf-8') as file:
-        file.write(response.text)
-
-    df = pd.read_csv(file_path, sep='\t')
+    urlData = response.content
+    df = pd.read_csv(io.StringIO(urlData.decode('utf-8')), sep='\t')
 
     valid_headers = list(df.columns)
     valid_confirmation = df[
@@ -80,6 +78,7 @@ def retrieve_validation_lists(url, file_path='validation_tsv.tsv'):
         'valid_molecule_origin': valid_molecule_origin,
         'valid_source': valid_source
     }
+
 
 # Function to validate entries based on valid lists
 def validate_entry(entry, valid_list):
