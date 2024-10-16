@@ -65,7 +65,7 @@ The columns that will be validated are:
 
 This will run the app locally:
 ```bash
-streamlit run app_homepage.py
+streamlit run app.py
 ```
 
 ## Cloud Application
