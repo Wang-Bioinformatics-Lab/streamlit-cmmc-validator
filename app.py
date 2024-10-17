@@ -3,6 +3,7 @@ import pandas as pd
 import requests
 import time
 import io
+import re
 
 
 # Function to check SMILES using the API
@@ -18,6 +19,10 @@ def check_smiles(smiles):
         return f"Error {e}"
 
 
+# Test function for validating a USI
+def is_valid_usi(usi):
+    return bool(re.match(usi_pattern, usi))
+
 # Function to check USI(s) using the API with retries
 def usi_request(usi: str, max_attempts=3):
     # Handle cases where multiple USIs are separated by ';'
@@ -25,45 +30,46 @@ def usi_request(usi: str, max_attempts=3):
     results = {}
 
     for u in usis:
-        attempts = 0
-        result = "FAILED"
-        while attempts < max_attempts:  # Try up to max_attempts times
-            print(f'Requesting {u} (Attempt {attempts + 1})')
+        if is_valid_usi(u):
+            attempts = 0
+            result = "FAILED"
+            while attempts < max_attempts:  # Try up to max_attempts times
+                print(f'Requesting {u} (Attempt {attempts + 1})')
 
-            try:
-                response = requests.get(f'https://metabolomics-usi.gnps2.org/json/?usi1={u.strip()}')
+                try:
+                    response = requests.get(f'https://metabolomics-usi.gnps2.org/json/?usi1={u.strip()}')
 
-                if response.status_code == 200:
-                    print(f'Attempt {attempts + 1} successful for {u}.')
-                    result = 'Ok'
+                    if response.status_code == 200:
+                        print(f'Attempt {attempts + 1} successful for {u}.')
+                        result = 'Ok'
+                        break
+                    else:
+                        print(f'Attempt {attempts + 1} failed for {u}.')
+                        print(f'Status code: {response.status_code}.')
+
+                except requests.RequestException as e:
+                    print(f'Error during request for {u}: {e}')
+                    result = f"Error {e}"
                     break
-                else:
-                    print(f'Attempt {attempts + 1} failed for {u}.')
-                    print(f'Status code: {response.status_code}.')
 
-            except requests.RequestException as e:
-                print(f'Error during request for {u}: {e}')
-                result = f"Error {e}"
-                break
+                # Increment attempts and sleep before retrying
+                attempts += 1
+                time.sleep(1)
 
-            # Increment attempts and sleep before retrying
-            attempts += 1
-            time.sleep(1)
-
-        if attempts == max_attempts and result != "Ok":
-            print(f'{u} failed after {max_attempts} attempts. Please verify if it is valid.')
-            result = f"FAILED - Status code {response.status_code}"
-        # Store the result for each USI
-        results[u] = result
+            if attempts == max_attempts and result != "Ok":
+                print(f'{u} failed after {max_attempts} attempts. Please verify if it is valid.')
+                result = f"FAILED - Status code {response.status_code}"
+            # Store the result for each USI
+            results[u] = result
+        else:
+            print(f'{u} failed because it is an valid USI.')
+            results[u] = 'FAILED - Invalid USI'
 
     # Return the result dictionary with status for each USI
     return results
 
-def retrieve_validation_lists(url, file_path='validation_tsv.tsv'):
-    response = requests.get(url)
-    response.raise_for_status()
-    urlData = response.content
-    df = pd.read_csv(io.StringIO(urlData.decode('utf-8')), sep='\t')
+def retrieve_validation_lists(tsv_file):
+    df = pd.read_csv(tsv_file, sep='\t')
 
     valid_headers = list(df.columns)
     valid_confirmation = df[
@@ -90,8 +96,8 @@ def validate_entry(entry, valid_list):
         return "FAILED"
 
 # Download and load validation data from google sheet reference file
-url = 'https://docs.google.com/spreadsheets/d/1ZF7uW3PxmOMMEJkiwDkHceI-W5aw2NE4aDc37kYDhNw/export?format=tsv&gid=724969182'
-validation_data = retrieve_validation_lists(url)
+validation_data_file = './controlled_vocabulary.tsv'
+validation_data = retrieve_validation_lists(validation_data_file)
 
 # Function to validate headers
 def validate_headers(uploaded_headers, expected_headers):
@@ -132,6 +138,9 @@ if uploaded_file is not None:
     if headers_valid:
         st.success("Headers are valid.", icon='✅')
 
+        # USI pattern allowing '/ ', '- ', and spaces
+        usi_pattern = r'^mzspec:[A-Za-z0-9\-_/\. ]+:[A-Za-z0-9\-_/\. ]+:[A-Za-z0-9\-_/\. ]+(:[A-Za-z0-9\-_/\. ]*)?$'
+
         # Validate USI
         st.write("Validating USIs...")
         df['usi_validation_details'] = df['input_usi'].apply(lambda x: usi_request(x) if pd.notnull(x) else "No USI")
@@ -160,7 +169,7 @@ if uploaded_file is not None:
 
         # Show rows with failed validations
         failed_usi = df[df['usi_validation_details'].apply(
-            lambda x: any(v == "FAILED" or v.startswith("Error") for v in x.values()))]
+            lambda x: any(v.startswith("FAILED") or v.startswith("Error") for v in x.values()))]
         failed_smiles = df[df['smiles_validation'] == 'FAILED']
         failed_molecule_origin = df[df['molecule_origin_validation'] == 'FAILED']
         failed_confirmation = df[df['confirmation_validation'] == 'FAILED']
