@@ -5,7 +5,7 @@ def about_page():
 
     st.markdown("""
     ### Overview
-    This project provides a tool for validating **Universal Spectrum Identifiers (USIs)**, **SMILES strings**, and various metadata fields with controlled vocabularies. It is designed to help researchers, scientists, and data curators ensure that their datasets follow the correct formatting for depositon data on CMMC (https://cmmc.gnps2.org/).
+    This project provides a tool for validating **Universal Spectrum Identifiers (USIs)**, **SMILES strings**, and various metadata fields with controlled vocabularies. It is designed to help ensure that the datasets follow the correct formatting for depositon data on CMMC (https://cmmc.gnps2.org/).
 
     ### Key Features
     - **Header Validation**: Checks that the uploaded TSV file contains all the required headers.
