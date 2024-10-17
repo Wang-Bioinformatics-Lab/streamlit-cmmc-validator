@@ -89,7 +89,7 @@ def retrieve_validation_lists(tsv_file):
 # Function to validate entries based on valid lists
 def validate_entry(entry, valid_list):
     if pd.isnull(entry):
-        return "No Data. Mandatory field."
+        return "FAILED. No Data provided. Mandatory field."
     elif entry.strip().upper() in valid_list:
         return "Ok"
     else:
@@ -170,10 +170,10 @@ if uploaded_file is not None:
         # Show rows with failed validations
         failed_usi = df[df['usi_validation_details'].apply(
             lambda x: any(v.startswith("FAILED") or v.startswith("Error") for v in x.values()))]
-        failed_smiles = df[df['smiles_validation'] == 'FAILED']
-        failed_molecule_origin = df[df['molecule_origin_validation'] == 'FAILED']
-        failed_confirmation = df[df['confirmation_validation'] == 'FAILED']
-        failed_source = df[df['source_validation'] == 'FAILED']
+        failed_smiles = df[df['smiles_validation'].str.startswith('FAILED')]
+        failed_molecule_origin = df[df['molecule_origin_validation'].str.startswith('FAILED')]
+        failed_confirmation = df[df['confirmation_validation'].str.startswith('FAILED')]
+        failed_source = df[df['source_validation'].str.startswith('FAILED')]
 
         st.write(f"Failed USIs: {len(failed_usi)}")
         st.dataframe(failed_usi[['input_usi', 'usi_validation_details']])
