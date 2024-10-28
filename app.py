@@ -1,8 +1,8 @@
 import streamlit as st
+from streamlit.components.v1 import html
 import pandas as pd
 import requests
 import time
-import io
 import re
 
 
@@ -107,11 +107,11 @@ def validate_headers(uploaded_headers, expected_headers):
     return True, None
 
 # Streamlit UI
-st.title("USI, SMILES, and Metadata Validator for CMMC batch deposition")
-# st.write("Upload a TSV file to validate the USI, SMILES, and metadata columns. It will check if: 1. All the headers are there and are valid; 2. Validate USI's; 3. Validate Smiles; 4. Validate fileds with controlled vocabulary.")
-st.markdown("""
-### Upload a TSV file to validate the USI, SMILES, and metadata columns.
+# Add a tracking token
+html('<script async defer data-website-id="1a70457c-e452-4e8f-822b-9983d742e174" src="https://analytics.gnps2.org/umami.js"></script>', width=0, height=0)
 
+st.title("CMMC Validator")
+st.markdown("""
 The validation process will check if:
 
 1. **All the headers** are present and valid.
@@ -120,7 +120,7 @@ The validation process will check if:
 4. Fields with **controlled vocabulary** are checked for validity.
 """)
 
-st.write("Template:  https://tinyurl.com/frku9zys")
+st.markdown("[Link to deposition file template](https://docs.google.com/spreadsheets/d/1ZF7uW3PxmOMMEJkiwDkHceI-W5aw2NE4aDc37kYDhNw/edit?usp=sharing)")
 
 # File upload
 uploaded_file = st.file_uploader("Choose a TSV file", type="tsv")
