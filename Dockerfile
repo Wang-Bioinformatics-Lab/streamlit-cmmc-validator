@@ -13,7 +13,6 @@ RUN echo "export PATH=$CONDA_DIR:$PATH" >> ~/.bashrc
 
 COPY requirements.txt .
 RUN pip install -r requirements.txt
-RUN pip install git+https://github.com/Wang-Bioinformatics-Lab/GNPSDataPackage.git
 
 COPY . /app
 WORKDIR /app

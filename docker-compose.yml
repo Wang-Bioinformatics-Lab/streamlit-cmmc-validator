@@ -1,6 +1,6 @@
 version: '3'
 services:
-  template-streamlit:
+  usi-smiles-validator-streamlit:
     build:
       context: .
       dockerfile: Dockerfile
@@ -13,9 +13,9 @@ services:
     restart: unless-stopped
     command: /app/run_server.sh
     environment:
-      VIRTUAL_HOST: http://cmmc-validation.gnps2.org/
+      VIRTUAL_HOST: cmmc-validation.gnps2.org
       VIRTUAL_PORT: 5000
-      LETSENCRYPT_HOST: http://cmmc-validation.gnps2.org/
+      LETSENCRYPT_HOST: cmmc-validation.gnps2.org
       LETSENCRYPT_EMAIL: mwang87@gmail.com
 
 networks:
