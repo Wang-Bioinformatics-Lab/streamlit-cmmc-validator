@@ -21,6 +21,8 @@ def check_smiles(smiles):
 
 # Test function for validating a USI
 def is_valid_usi(usi):
+    # USI pattern allowing '/ ', '- ', and spaces
+    usi_pattern = r'^mzspec:[A-Za-z0-9\-_/\. ]+:[A-Za-z0-9\-_/\. ]+:[A-Za-z0-9\-_/\. ]+(:[A-Za-z0-9\-_/\. ]*)?$'
     return bool(re.match(usi_pattern, usi))
 
 # Function to check USI(s) using the API with retries
@@ -30,7 +32,7 @@ def usi_request(usi: str, max_attempts=3):
     results = {}
 
     for u in usis:
-        if is_valid_usi(u):
+        if is_valid_usi(u.strip()):
             attempts = 0
             result = "FAILED"
             while attempts < max_attempts:  # Try up to max_attempts times
@@ -62,7 +64,7 @@ def usi_request(usi: str, max_attempts=3):
             # Store the result for each USI
             results[u] = result
         else:
-            print(f'{u} failed because it is an valid USI.')
+            print(f'{u} failed because it is an invalid USI.')
             results[u] = 'FAILED - Invalid USI'
 
     # Return the result dictionary with status for each USI
@@ -137,9 +139,6 @@ if uploaded_file is not None:
 
     if headers_valid:
         st.success("Headers are valid.", icon='✅')
-
-        # USI pattern allowing '/ ', '- ', and spaces
-        usi_pattern = r'^mzspec:[A-Za-z0-9\-_/\. ]+:[A-Za-z0-9\-_/\. ]+:[A-Za-z0-9\-_/\. ]+(:[A-Za-z0-9\-_/\. ]*)?$'
 
         # Validate USI
         st.write("Validating USIs...")
