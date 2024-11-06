@@ -4,17 +4,19 @@ import pandas as pd
 import requests
 import time
 import re
+import urllib.parse
 
 
 # Function to check SMILES using the API
 def check_smiles(smiles):
-    url = f"https://structure.gnps2.org/convert?smiles={smiles}"
+    encoded_smiles = urllib.parse.quote(smiles, safe='')
+    url = f"https://structure.gnps2.org/convert?smiles={encoded_smiles}"
     try:
         response = requests.get(url)
         if response.status_code == 200:
             return "Ok"
         else:
-            return "FAILED"
+            return f"FAILED {response.status_code}"
     except Exception as e:
         return f"Error {e}"
 
