@@ -143,26 +143,26 @@ if uploaded_file is not None:
         st.success("Headers are valid.", icon='✅')
 
         # Validate USI
-        st.write("Validating USIs...")
-        df['usi_validation_details'] = df['input_usi'].apply(lambda x: usi_request(x) if pd.notnull(x) else "No USI")
+        with st.spinner('Validating USIs...'):
+            df['usi_validation_details'] = df['input_usi'].apply(lambda x: usi_request(x) if pd.notnull(x) else "No USI")
 
         # Validate SMILES
-        st.write("Validating SMILES...")
-        df['smiles_validation'] = df['input_structure'].apply(
-            lambda x: check_smiles(x) if pd.notnull(x) else "No SMILES")
+        with st.spinner('Validating SMILES...'):
+            df['smiles_validation'] = df['input_structure'].apply(
+                lambda x: check_smiles(x) if pd.notnull(x) else "No SMILES")
 
         # Validate input_molecule_origin
-        st.write("Validating input_molecule_origin...")
-        df['molecule_origin_validation'] = df['input_molecule_origin'].apply(
-            lambda x: validate_entry(x, validation_data['valid_molecule_origin']))
+        with st.spinner('Validating input_molecule_origin...'):
+            df['molecule_origin_validation'] = df['input_molecule_origin'].apply(
+                lambda x: validate_entry(x, validation_data['valid_molecule_origin']))
 
         # Validate input_confirmation
-        st.write("Validating input_confirmation...")
-        df['confirmation_validation'] = df['input_confirmation'].apply(lambda x: validate_entry(x, validation_data['valid_confirmation']))
+        with st.spinner('Validating input_confirmation...'):
+            df['confirmation_validation'] = df['input_confirmation'].apply(lambda x: validate_entry(x, validation_data['valid_confirmation']))
 
         # Validate input_source
-        st.write("Validating input_source...")
-        df['source_validation'] = df['input_source'].apply(lambda x: validate_entry(x, validation_data['valid_source']))
+        with st.spinner('Validating input_source...'):
+            df['source_validation'] = df['input_source'].apply(lambda x: validate_entry(x, validation_data['valid_source']))
 
         # Show updated DataFrame
         st.write("Validated Data:")
