@@ -1,10 +1,16 @@
 input_usi	input_confirmation	input_confirmation_description	input_name	input_structure	input_partial_structure	input_molecule_origin	input_original_molecule_name	input_original_molecule_structure	input_microbe_ncbi	input_microbe_name	input_microbe_DNARNA	input_microbial_community	input_microbial_community_description	input_biosynthesis_mibig	input_biosynthesis_genes	input_biosynthesis_description	input_source	input_activity	input_concentration_activity	input_phenotype_associated	input_phenotype_direction	input_concentration_phenotype	input_references	input_references_link	grant_agency	grant_number	input_comment
-	Confirmed					Microbial metabolism of drugs											Microbial										
-	Predicted					Microbial metabolism of food molecules											Microbial and Host										
-						Microbial metabolism of other human-made molecules											Microbial and Diet										
-						Microbial metabolism of host-derived molecules											Microbial, Host, and Diet										
-						Microbial metabolism of microbial-derived molecules											Diet										
-						Host metabolism of microbial metabolites											Unknown										
-						De novo biosynthesis by microbes (e.g., natural products and other specialized metabolites)																					
-						Diet																					
+	Confirmed					Ambiguous 											Microbial										
+	Predicted					De novo biosynthesis by microbes (e.g., natural products and other specialized metabolites)											Microbial and Host										
+						Diet											Microbial and Diet										
+						Drug											Microbial, Host, and Diet										
+						Exposure											Diet										
+						Exposure/diet											Unknown										
+						Host																					
+						Host metabolism of microbial metabolites																					
+						Insecticides/pesticides 																					
+						Microbial metabolism of drugs																					
+						Microbial metabolism of food molecules																					
+						Microbial metabolism of host-derived molecules																					
+						Microbial metabolism of microbial-derived molecules																					
+						Microbial metabolism of other human-made molecules																					
 						Unknown/Undefined																					

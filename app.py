@@ -90,6 +90,21 @@ def retrieve_validation_lists(tsv_file):
     }
 
 
+def validate_molecule_origin(entry, valid_list):
+    if pd.isnull(entry):
+        return "FAILED. No Data provided. Mandatory field."
+
+    # Split entries by semicolon and strip whitespace
+    origins = [origin.strip().upper() for origin in str(entry).split(';')]
+
+    # Check if ALL entries are in the valid list
+    invalid_origins = [origin for origin in origins if origin not in valid_list]
+
+    if not invalid_origins:
+        return "Ok"
+    else:
+        return f"FAILED: Invalid origin(s) - {', '.join(invalid_origins)}"
+
 # Function to validate entries based on valid lists
 def validate_entry(entry, valid_list):
     if pd.isnull(entry):
@@ -154,7 +169,7 @@ if uploaded_file is not None:
         # Validate input_molecule_origin
         with st.spinner('Validating input_molecule_origin...'):
             df['molecule_origin_validation'] = df['input_molecule_origin'].apply(
-                lambda x: validate_entry(x, validation_data['valid_molecule_origin']))
+                lambda x: validate_molecule_origin(x, validation_data['valid_molecule_origin']))
 
         # Validate input_confirmation
         with st.spinner('Validating input_confirmation...'):
