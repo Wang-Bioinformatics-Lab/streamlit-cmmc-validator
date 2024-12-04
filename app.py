@@ -99,7 +99,7 @@ def validate_entry(entry, valid_list):
     else:
         return "FAILED"
 
-# Download and load validation data from google sheet reference file
+# Download and load validation data from reference file
 validation_data_file = './controlled_vocabulary.tsv'
 validation_data = retrieve_validation_lists(validation_data_file)
 
@@ -144,7 +144,7 @@ if uploaded_file is not None:
 
         # Validate USI
         with st.spinner('Validating USIs...'):
-            df['usi_validation_details'] = df['input_usi'].apply(lambda x: usi_request(x) if pd.notnull(x) else "No USI")
+            df['usi_validation_details'] = df['input_usi'].apply(lambda x: usi_request(x) if pd.notnull(x) else {"No USI": "Ok"})
 
         # Validate SMILES
         with st.spinner('Validating SMILES...'):
