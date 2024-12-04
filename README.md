@@ -1,6 +1,6 @@
-# Data Validation Script for USI, SMILES, and Metadata
+# CMMC Validation
 
-This repository contains a Python script and a cloud-hosted app (https://usi-smiles-validator.streamlit.app/) designed to validate USI (Universal Spectrum Identifier), SMILES strings, and several metadata fields (`input_molecule_origin`, `input_confirmation`, `input_source`). The validation process checks for valid entries and flags rows with incorrect or invalid data.
+This repository contains the code for the CMMC data validator. You can validate your data prior to deposition by accessing [CMMC Validation](http://cmmc-validation.gnps2.org).
 
 ## Table of Contents
 
@@ -52,7 +52,7 @@ This repository contains a Python script and a cloud-hosted app (https://usi-smi
 
 ## Usage
 
-To validate the deposition dataset, prepare a TSV file with the following template (https://tinyurl.com/frku9zys).
+To validate the deposition dataset, prepare a TSV file using the following [template](https://tinyurl.com/frku9zys).
 The columns that will be validated are:
 
 - `input_usi`
@@ -72,40 +72,19 @@ streamlit run app.py
 
 You can also use the cloud-hosted Streamlit application to perform validation without needing to install anything locally.
 
-**Access the app here**: [USI and SMILES Validator](https://usi-smiles-validator.streamlit.app/)
+**Access the app here**: [CMMC Validation](http://cmmc-validation.gnps2.org)
 
 ## Valid Entries
 
-### input_molecule_origin
-- Microbial metabolism of drugs
-- Microbial metabolism of food molecules
-- Microbial metabolism of other human-made molecules
-- Microbial metabolism of host-derived molecules
-- Microbial metabolism of microbial-derived molecules
-- Host metabolism of microbial metabolites
-- De novo biosynthesis by microbes (e.g., natural products and other specialized metabolites)
-- Diet
-- Unknown/Undefined
-
-### input_confirmation
-- confirmed
-- predicted
-
-### input_source
-- Microbial
-- Microbial and Host
-- Microbial and Diet
-- Microbial, Host, and Diet
-- Diet
-- Unknown
+You can check the valid entries in the [controlled_vocabulary.tsv](controlled_vocabulary.tsv) file.
 
 ## Troubleshooting
 
 If you encounter any issues, here are a few tips:
 
 - **Case-sensitivity**: The script performs case-insensitive validation, but make sure to remove any unnecessary spaces in the TSV file.
-- **SMILES validation errors**: If you receive errors during SMILES validation, ensure that your SMILES strings are formatted correctly AND are valid (use https://structure.gnps2.org/convert?smiles={your_smiles}).
-- **USI validation**: Ensure that the USI strings follow the correct format. The script allows multiple USIs separated by semicolons. If the HTTP responde that caused the failing is 500, the USI is probably valid, but the server faced some internal issue. Please manually verify if this is the case accessing https://metabolomics-usi.gnps2.org/json/?usi1={your_500_code_usi}). If the page loads with a peak list, you are good to go. 
+- **SMILES validation errors**: If you receive errors during SMILES validation, ensure that your SMILES strings are formatted correctly AND are valid. Use https://structure.gnps2.org/convert?smiles={your_smiles} replacing `{your_smiles}` with the appropriate value.
+- **USI validation**: Ensure that the USI strings follow the correct format. The script allows multiple USIs separated by semicolons. If the HTTP response code that caused the failing is 500, the USI is probably valid, but the server faced some internal issue. Please, verify manually if this is the case accessing https://metabolomics-usi.gnps2.org/json/?usi1={your_500_code_usi} replacing `{your_500_code_usi}` with the appropriate value. If the page loads with a peak list, you are good to go. 
 
 If problems persist, please open an issue in the GitHub repository.
 
